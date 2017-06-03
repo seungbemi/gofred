@@ -6,27 +6,8 @@ import (
 	"strings"
 )
 
-// IconInfo includes item's icon type and path
-type IconInfo struct {
-	Type string `json:"type,omitempty"` // Optional
-	Path string `json:"path"`
-}
-
-// Item that will be shown as a result
-type Item struct {
-	Title        string   `json:"title"`    // Essential
-	Subtitle     string   `json:"subtitle"` // Optional
-	Icon         IconInfo `json:"icon"`
-	Arg          string   `json:"arg"`            // Recommended
-	Autocomplete string   `json:"autocomplete"`   // Recommended
-	UID          string   `json:"uid,omitempty"`  // Optional
-	Type         string   `json:"type,omitempty"` // Default = "default"
-	Valid        bool     `json:"valid"`          // Default = true
-
-}
-
 type alfredWorkflow struct {
-	VarMap map[string]string `json:"variables"`
+	VarMap map[string]string `json:"variables,omitempty"`
 }
 
 // Response has all the items for showing on alfred
@@ -42,43 +23,55 @@ func NewResponse() *Response {
 	return resp
 }
 
+// NewItem create a new item with basic information
+func NewItem(title, subtitle, autocomplete string) Item {
+	return Item{
+		Title:        title,
+		Autocomplete: autocomplete,
+		SubInfo: SubInfo{
+			Subtitle: subtitle,
+			Valid:    false,
+		},
+	}
+}
+
+// NewItemOnce returns a item to be shown
+func NewItemOnce(title, subtitle, iconType, iconPath, arg, autocomplete, uid, itemType string, valid bool, mods Modifiers) Item {
+	return Item{
+		Title: title,
+		Icon: IconInfo{
+			Type: iconType,
+			Path: iconPath,
+		},
+		Autocomplete: autocomplete,
+		UID:          uid,
+		Type:         itemType,
+		SubInfo: SubInfo{
+			Subtitle: subtitle,
+			Valid:    valid,
+			Arg:      arg,
+		},
+		Mods: mods,
+	}
+}
+
 // AddVariable add a alfred environment value to pass
 func (r *Response) AddVariable(key, value string) {
 	r.VarMap[key] = value
 }
 
-// AddItem add a item to response
-func (r *Response) AddItem(title, subtitle, iconType, iconPath, arg, autocomplete, uid, itemType string, valid bool) {
-	r.Items = append(r.Items, Item{
-		Title:    title,
-		Subtitle: subtitle,
-		Icon: IconInfo{
-			Type: iconType,
-			Path: iconPath,
-		},
-		Arg:          arg,
-		Autocomplete: autocomplete,
-		UID:          uid,
-		Type:         itemType,
-		Valid:        valid,
-	})
+// AddItems add a item to response
+func (r *Response) AddItems(items ...Item) {
+	r.Items = append(r.Items, items...)
 }
 
-// MatchCommand add a item if the title matches with given command
-func (r *Response) MatchCommand(cmd, title, subtitle, iconType, iconPath, arg, autocomplete, uid, itemType string, valid bool) {
-	if len(cmd) == 0 || strings.Contains(title, cmd) {
-		r.AddItem(title, subtitle, iconPath, iconPath, arg, autocomplete, uid, itemType, valid)
+// AddMatchedItems add a item if the title matches with given command
+func (r *Response) AddMatchedItems(str string, items ...Item) {
+	for _, item := range items {
+		if len(str) == 0 || strings.Contains(item.Title, str) {
+			r.AddItems(item)
+		}
 	}
-}
-
-// AddMatchedListItem add an not runnable item which is matched with given command
-func (r *Response) AddMatchedListItem(cmd, title, subtitle, iconPath, autoComplete string) {
-	r.MatchCommand(cmd, title, subtitle, "", iconPath, "", autoComplete, title+"."+subtitle, "default", false)
-}
-
-// AddMatchedExecutableItem is simplified function of MatchCommand
-func (r *Response) AddMatchedExecutableItem(cmd, title, subtitle, iconPath, autoComplete, arg string) {
-	r.MatchCommand(cmd, title, subtitle, "", iconPath, arg, autoComplete, title+"."+subtitle, "default", true)
 }
 
 func (r *Response) String() string {
@@ -87,4 +80,9 @@ func (r *Response) String() string {
 		fmt.Printf(err.Error())
 	}
 	return string(bytes)
+}
+
+// IsEmpty returns if it's empty or not
+func (r *Response) IsEmpty() bool {
+	return len(r.Items) == 0
 }
