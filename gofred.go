@@ -6,14 +6,10 @@ import (
 	"strings"
 )
 
-type alfredWorkflow struct {
-	VarMap map[string]string `json:"variables,omitempty"`
-}
-
 // Response has all the items for showing on alfred
 type Response struct {
-	alfredWorkflow `json:"alfredworkflow,omitempty"`
-	Items          []Item `json:"items,omitempty"`
+	VarMap map[string]string `json:"variables,omitempty"`
+	Items  []Item            `json:"items,omitempty"`
 }
 
 // NewResponse returns a instance Response
