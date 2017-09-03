@@ -18,7 +18,7 @@ type IconInfo struct {
 type SubInfo struct {
 	Subtitle string `json:"subtitle,omitempty"` // Optional
 	Arg      string `json:"arg,omitempty"`      // Recommended
-	Valid    bool   `json:"valid,omitempty"`    // Default = true
+	Valid    bool   `json:"valid"`              // Default = true
 }
 
 // Modifiers includes subinfo for modifiers
