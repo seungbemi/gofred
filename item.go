@@ -59,6 +59,14 @@ func NewItem(title, subtitle, autocomplete string) Item {
 	}
 }
 
+// NewVariable create a new variable instacne
+func NewVariable(key, value string) Variable {
+	return Variable{
+		key:   key,
+		value: value,
+	}
+}
+
 // AddIcon adds icon information to the item
 func (i Item) AddIcon(iconPath, iconType string) Item {
 	i.Icon = IconInfo{
